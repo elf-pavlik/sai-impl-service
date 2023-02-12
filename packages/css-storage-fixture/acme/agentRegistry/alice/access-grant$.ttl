@@ -9,5 +9,7 @@ PREFIX interop: <http://www.w3.org/ns/solid/interop#>
     interop:grantedWith <https://auth.acme.example/#agent> ;
     interop:grantedAt "2020-09-05T06:15:01Z"^^xsd:dateTime ;
     interop:hasDataGrant
-      <http://localhost:3000/acme/agentRegistry/alice/data-grant-projects> ,
-      <http://localhost:3000/acme/agentRegistry/alice/data-grant-tasks> .
+      <http://localhost:3000/acme/agentRegistry/alice/data-grant-projects-rnd> ,
+      <http://localhost:3000/acme/agentRegistry/alice/data-grant-tasks-rnd> ,
+      <http://localhost:3000/acme/agentRegistry/alice/data-grant-projects-hr> ,
+      <http://localhost:3000/acme/agentRegistry/alice/data-grant-tasks-hr> .
