@@ -10,6 +10,7 @@ import {
 import type { SaiContext } from "../models/http-solid-context";
 import { validateContentType } from "../utils/http-validators";
 import { IReciprocalRegistrationsJobData } from "../models/jobs";
+import { getResource } from "../services/data-instance";
 
 export class ApiHandler extends HttpHandler {
   private logger = getLoggerFor(this, 5, 5);
@@ -34,30 +35,28 @@ export class ApiHandler extends HttpHandler {
           type: ResponseMessageTypes.APPLICATIONS_RESPONSE,
           payload: await getApplications(context.saiSession)
         }, status: 200, headers: {} }
-      case RequestMessageTypes.APPLICATION_PROFILE:
-        // eslint-disable-next-line no-case-declarations
+      case RequestMessageTypes.APPLICATION_PROFILE: {
         const { id } = body;
         return { body: {
           type: ResponseMessageTypes.APPLICATION_PROFILE,
           payload: await getUnregisteredApplicationProfile(context.saiSession, id),
           }, status: 200, headers: {} }
+        }
       case RequestMessageTypes.SOCIAL_AGENTS_REQUEST:
         return { body: {
           type: ResponseMessageTypes.SOCIAL_AGENTS_RESPONSE,
           payload: await getSocialAgents(context.saiSession)
          }, status: 200, headers: {} }
-      case RequestMessageTypes.ADD_SOCIAL_AGENT_REQUEST:
-        // eslint-disable-next-line no-case-declarations
+      case RequestMessageTypes.ADD_SOCIAL_AGENT_REQUEST: {
         const { webId, label, note } = body
-        // eslint-disable-next-line no-case-declarations
         const socialAgent = await addSocialAgent(context.saiSession, { webId, label, note })
-        // eslint-disable-next-line no-case-declarations
         const jobData: IReciprocalRegistrationsJobData = { webId: context.saiSession.webId, registeredAgent: socialAgent.id}
         await this.queue.add(jobData)
         return { body: {
           type: ResponseMessageTypes.SOCIAL_AGENT_RESPONSE,
           payload: socialAgent
          }, status: 200, headers: {} }
+        }
       case RequestMessageTypes.DATA_REGISTRIES_REQUEST:
         return { body: {
           type: ResponseMessageTypes.DATA_REGISTRIES_RESPONSE,
@@ -73,6 +72,13 @@ export class ApiHandler extends HttpHandler {
           type: ResponseMessageTypes.APPLICATION_AUTHORIZATION_REGISTERED,
           payload: await recordAuthorization(body.authorization, context.saiSession)
         }, status: 200, headers: {} }
+      case RequestMessageTypes.RESOURCE_REQUEST: {
+        const { id } = body;
+        return { body: {
+          type: ResponseMessageTypes.RESOURCE_RESPONSE,
+          payload: await getResource(context.saiSession, id)
+         }, status: 200, headers: {} }
+        }
       default:
         throw new BadRequestHttpError()
     }

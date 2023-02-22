@@ -1,6 +1,7 @@
 export const RequestMessageTypes = {
   APPLICATIONS_REQUEST: '[APPLICATION PROFILES] Application Profiles Requested',
   SOCIAL_AGENTS_REQUEST: '[SOCIAL AGENTS] Application Profiles Requested',
+  RESOURCE_REQUEST: '[RESOURCE] Resource Requested',
   DESCRIPTIONS_REQUEST: '[DESCRIPTIONS] Descriptions Requested',
   DATA_REGISTRIES_REQUEST: '[DATA_REGISTRIES] Data Registries Requested',
   ADD_SOCIAL_AGENT_REQUEST: '[SOCIAL AGENTS] Data Registries Requested',
@@ -11,6 +12,7 @@ export const RequestMessageTypes = {
 export const ResponseMessageTypes = {
   APPLICATIONS_RESPONSE: '[APPLICATION PROFILES] Application Profiles Received',
   SOCIAL_AGENTS_RESPONSE: '[SOCIAL AGENTS PROFILES] Application Profiles Received',
+  RESOURCE_RESPONSE: '[RESOURCE] Resource Received',
   DESCRIPTIONS_RESPONSE: '[DESCRIPTIONS] Descriptions Received',
   DATA_REGISTRIES_RESPONSE: '[DATA_REGISTRIES] Data Registries Received',
   SOCIAL_AGENT_RESPONSE: '[SOCIAL AGENTS] Social Agent Received',
@@ -27,10 +29,10 @@ type VResponseMessages = TResponseMessage[TResponseMessages]
 // type ResponseKeys = keyof typeof ResponseMessageTypes
 
 export type ResponseMessage = ApplicationsResponseMessage | SocialAgentsResponseMessage |
-  SocialAgentResponseMessage | DataRegistriesResponseMessage | DescriptionsResponseMessage |
+  SocialAgentResponseMessage | ResourceResponseMessage | DataRegistriesResponseMessage | DescriptionsResponseMessage |
   ApplicationAuthorizationResponseMessage
 
-type Payloads = Application[] | SocialAgent[] | SocialAgent | DataRegistry[] | AuthorizationData | AccessAuthorization
+type Payloads = Application[] | SocialAgent[] | SocialAgent | DataRegistry[] | AuthorizationData | AccessAuthorization | Resource
 
 type IResponseMessage<T extends VResponseMessages, P extends Payloads> = {
   type: T,
@@ -40,11 +42,12 @@ type IResponseMessage<T extends VResponseMessages, P extends Payloads> = {
 export type ApplicationsResponseMessage = IResponseMessage<typeof ResponseMessageTypes.APPLICATIONS_RESPONSE, Application[]>;
 export type SocialAgentsResponseMessage = IResponseMessage<typeof ResponseMessageTypes.SOCIAL_AGENTS_RESPONSE, SocialAgent[]>;
 export type SocialAgentResponseMessage = IResponseMessage<typeof ResponseMessageTypes.SOCIAL_AGENT_RESPONSE, SocialAgent>;
+export type ResourceResponseMessage = IResponseMessage<typeof ResponseMessageTypes.RESOURCE_RESPONSE, Resource>;
 export type DataRegistriesResponseMessage = IResponseMessage<typeof ResponseMessageTypes.DATA_REGISTRIES_RESPONSE, DataRegistry[]>;
 export type DescriptionsResponseMessage = IResponseMessage<typeof ResponseMessageTypes.DESCRIPTIONS_RESPONSE, AuthorizationData>;
 export type ApplicationAuthorizationResponseMessage = IResponseMessage<typeof ResponseMessageTypes.APPLICATION_AUTHORIZATION_REGISTERED, AccessAuthorization>;
 
-type Responses = ApplicationAuthorizationResponse | SocialAgentsResponse | SocialAgentResponse | DataRegistriesResponse | DescriptionsResponse | ApplicationAuthorizationResponse
+type Responses = ApplicationAuthorizationResponse | SocialAgentsResponse | ResourceResponseMessage | SocialAgentResponse | DataRegistriesResponse | DescriptionsResponse | ApplicationAuthorizationResponse
 
 export type IRI = string;
 
@@ -105,6 +108,24 @@ export class SocialAgentResponse {
   }
 }
 
+export class ResourceRequest extends MessageBase {
+  public type = RequestMessageTypes.RESOURCE_REQUEST
+
+  constructor(public id: IRI) {
+    super()
+  }
+}
+
+export class ResourceResponse {
+  public type = ResponseMessageTypes.RESOURCE_RESPONSE
+  public payload: Resource
+
+  constructor(message: ResourceResponseMessage) {
+    validateType(message.type, this.type);
+    this.payload = message.payload
+  }
+}
+
 export class DataRegistriesRequest extends MessageBase {
   public type = RequestMessageTypes.DATA_REGISTRIES_REQUEST
 
@@ -160,7 +181,7 @@ export class ApplicationAuthorizationResponse {
   }
 }
 
-export type Request = ApplicationsRequest | SocialAgentsRequest | AddSocialAgentRequest |
+export type Request = ApplicationsRequest | SocialAgentsRequest | AddSocialAgentRequest | ResourceRequest |
   DataRegistriesRequest | DescriptionsRequest | ApplicationAuthorizationRequest
 
 export interface UniqueId {
@@ -251,4 +272,9 @@ export type Authorization = GrantedAuthorization | DeniedAuthorization
 
 export interface AccessAuthorization extends UniqueId, GrantedAuthorization {
   callbackEndpoint?: IRI;
+}
+
+export type Resource = {
+  id: IRI;
+  label?: string;
 }
