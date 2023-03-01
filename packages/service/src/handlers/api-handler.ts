@@ -10,7 +10,7 @@ import {
 import type { SaiContext } from "../models/http-solid-context";
 import { validateContentType } from "../utils/http-validators";
 import { IReciprocalRegistrationsJobData } from "../models/jobs";
-import { getResource } from "../services/data-instance";
+import { getResource, shareResource } from "../services/data-instance";
 
 export class ApiHandler extends HttpHandler {
   private logger = getLoggerFor(this, 5, 5);
@@ -73,11 +73,18 @@ export class ApiHandler extends HttpHandler {
           payload: await recordAuthorization(body.authorization, context.saiSession)
         }, status: 200, headers: {} }
       case RequestMessageTypes.RESOURCE_REQUEST: {
-        const { id } = body;
+        const { id, lang } = body;
         return { body: {
           type: ResponseMessageTypes.RESOURCE_RESPONSE,
-          payload: await getResource(context.saiSession, id)
+          payload: await getResource(context.saiSession, id, lang)
          }, status: 200, headers: {} }
+        }
+      case RequestMessageTypes.SHARE_AUTHORIZATION: {
+        const { shareAuthorization } = body;
+        return { body: {
+          type: ResponseMessageTypes.SHARE_AUTHORIZATION_CONFIRMATION,
+          payload: await shareResource(context.saiSession, shareAuthorization)
+          }, status: 200, headers: {} }
         }
       default:
         throw new BadRequestHttpError()

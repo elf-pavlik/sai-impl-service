@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
+    "build": "npm run build:ts",
+    "publish": "npm run clean && npm run build",
     "build:ts": "tsc",
     "clean": "rm -rf dist/",
     "test": "jest"

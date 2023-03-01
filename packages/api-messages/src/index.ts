@@ -7,6 +7,7 @@ export const RequestMessageTypes = {
   ADD_SOCIAL_AGENT_REQUEST: '[SOCIAL AGENTS] Data Registries Requested',
   APPLICATION_AUTHORIZATION: '[APPLICATION] Authorization submitted',
   APPLICATION_PROFILE: 'ApplicationProfileRequest',
+  SHARE_AUTHORIZATION: '[RESOURCE] Share Authorization Requested',
 } as const
 
 export const ResponseMessageTypes = {
@@ -18,6 +19,7 @@ export const ResponseMessageTypes = {
   SOCIAL_AGENT_RESPONSE: '[SOCIAL AGENTS] Social Agent Received',
   APPLICATION_AUTHORIZATION_REGISTERED: '[APPLICATION] Authorization registered',
   APPLICATION_PROFILE: 'ApplicationProfileResponse',
+  SHARE_AUTHORIZATION_CONFIRMATION: '[RESOURCE] Share Authorization Confirmed',
 } as const
 
 type TResponseMessage = typeof ResponseMessageTypes
@@ -30,9 +32,9 @@ type VResponseMessages = TResponseMessage[TResponseMessages]
 
 export type ResponseMessage = ApplicationsResponseMessage | SocialAgentsResponseMessage |
   SocialAgentResponseMessage | ResourceResponseMessage | DataRegistriesResponseMessage | DescriptionsResponseMessage |
-  ApplicationAuthorizationResponseMessage
+  ApplicationAuthorizationResponseMessage | ShareAuthorizationResponseMessage
 
-type Payloads = Application[] | SocialAgent[] | SocialAgent | DataRegistry[] | AuthorizationData | AccessAuthorization | Resource
+type Payloads = Application[] | SocialAgent[] | SocialAgent | DataRegistry[] | AuthorizationData | AccessAuthorization | Resource | ShareAuthorizationConfirmation
 
 type IResponseMessage<T extends VResponseMessages, P extends Payloads> = {
   type: T,
@@ -46,10 +48,18 @@ export type ResourceResponseMessage = IResponseMessage<typeof ResponseMessageTyp
 export type DataRegistriesResponseMessage = IResponseMessage<typeof ResponseMessageTypes.DATA_REGISTRIES_RESPONSE, DataRegistry[]>;
 export type DescriptionsResponseMessage = IResponseMessage<typeof ResponseMessageTypes.DESCRIPTIONS_RESPONSE, AuthorizationData>;
 export type ApplicationAuthorizationResponseMessage = IResponseMessage<typeof ResponseMessageTypes.APPLICATION_AUTHORIZATION_REGISTERED, AccessAuthorization>;
+export type ShareAuthorizationResponseMessage = IResponseMessage<typeof ResponseMessageTypes.SHARE_AUTHORIZATION_CONFIRMATION, ShareAuthorizationConfirmation>;
 
-type Responses = ApplicationAuthorizationResponse | SocialAgentsResponse | ResourceResponseMessage | SocialAgentResponse | DataRegistriesResponse | DescriptionsResponse | ApplicationAuthorizationResponse
+
+type Responses = ApplicationAuthorizationResponse | SocialAgentsResponse | ResourceResponseMessage | SocialAgentResponse | DataRegistriesResponse | DescriptionsResponse | ApplicationAuthorizationResponse | ShareAuthorizationResponse
 
 export type IRI = string;
+
+export type ShapeTree = {
+  id: IRI,
+  label: string,
+  references?: ShapeTree[]
+};
 
 abstract class MessageBase {
   stringify (): string {
@@ -111,7 +121,7 @@ export class SocialAgentResponse {
 export class ResourceRequest extends MessageBase {
   public type = RequestMessageTypes.RESOURCE_REQUEST
 
-  constructor(public id: IRI) {
+  constructor(public id: IRI, private lang: string) {
     super()
   }
 }
@@ -181,8 +191,28 @@ export class ApplicationAuthorizationResponse {
   }
 }
 
+export class ShareAuthorizationRequest extends MessageBase {
+  public type = RequestMessageTypes.SHARE_AUTHORIZATION
+
+  constructor(private shareAuthorization: ShareAuthorization) {
+    super()
+  }
+}
+
+export class ShareAuthorizationResponse {
+
+  public type = ResponseMessageTypes.SHARE_AUTHORIZATION_CONFIRMATION
+  public payload: ShareAuthorizationConfirmation
+
+  constructor(message: ShareAuthorizationResponseMessage) {
+    validateType(message.type, this.type);
+    this.payload = message.payload
+  }
+}
+
+
 export type Request = ApplicationsRequest | SocialAgentsRequest | AddSocialAgentRequest | ResourceRequest |
-  DataRegistriesRequest | DescriptionsRequest | ApplicationAuthorizationRequest
+  DataRegistriesRequest | DescriptionsRequest | ApplicationAuthorizationRequest | ShareAuthorizationRequest
 
 export interface UniqueId {
   id: IRI;
@@ -234,10 +264,7 @@ export interface AccessNeed extends UniqueId {
   required?: boolean;
   // IRIs for the access modes
   access: Array<IRI>;
-  shapeTree: {
-    id: IRI,
-    label: string
-  }
+  shapeTree: ShapeTree;
   children?: AccessNeed[]
   parent?: IRI
 }
@@ -273,8 +300,27 @@ export type Authorization = GrantedAuthorization | DeniedAuthorization
 export interface AccessAuthorization extends UniqueId, GrantedAuthorization {
   callbackEndpoint?: IRI;
 }
-
+export type ChildResource = {
+  shapeTree: {
+      id: string;
+      label: string;
+      count: number;
+  }
+}
 export type Resource = {
   id: IRI;
   label?: string;
+  shapeTree: ShapeTree;
+  children: ChildResource[];
+};
+
+export type ShareAuthorization = {
+  resource: IRI;
+  applicationId: IRI;
+  agents: IRI[];
+  children: IRI[];
+}
+
+export interface ShareAuthorizationConfirmation {
+  callbackEndpoint: IRI;
 }
