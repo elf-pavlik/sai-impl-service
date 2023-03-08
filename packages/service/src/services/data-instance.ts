@@ -11,12 +11,13 @@ export const getResource = async (saiSession: AuthorizationAgent, iri: string, l
             id: resource.dataRegistration!.shapeTree!.iri,
             label: resource.dataRegistration!.shapeTree!.descriptions[lang]!.label,
         },
+        accessGrantedTo: (await saiSession.findSocialAgentsWithAccess(resource.iri)).map(({agent}) => agent),
         children: await Promise.all(
             resource.dataRegistration!.shapeTree!.references.map(async reference => ({
+                count: resource.getObjectsArray(reference.viaPredicate).length,
                 shapeTree: {
                     id: reference.shapeTree,
                     label: (await saiSession.factory.readable.shapeTree(reference.shapeTree, lang)).descriptions[lang]!.label,
-                    count: resource.getObjectsArray(reference.viaPredicate).length
                 }
             }))
         )

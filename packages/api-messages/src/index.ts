@@ -301,10 +301,10 @@ export interface AccessAuthorization extends UniqueId, GrantedAuthorization {
   callbackEndpoint?: IRI;
 }
 export type ChildResource = {
+  count: number;
   shapeTree: {
       id: string;
       label: string;
-      count: number;
   }
 }
 export type Resource = {
@@ -312,6 +312,7 @@ export type Resource = {
   label?: string;
   shapeTree: ShapeTree;
   children: ChildResource[];
+  accessGrantedTo: IRI[];
 };
 
 export type ShareAuthorization = {
