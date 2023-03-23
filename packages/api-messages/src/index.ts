@@ -22,6 +22,14 @@ export const ResponseMessageTypes = {
   SHARE_AUTHORIZATION_CONFIRMATION: '[RESOURCE] Share Authorization Confirmed',
 } as const
 
+// duplicated so that we don't need to use RDFJS and namespace builder on the frontend
+export const AccessModes = {
+  Read: 'http://www.w3.org/ns/auth/acl#Read',
+  Update: 'http://www.w3.org/ns/auth/acl#Update',
+  Create: 'http://www.w3.org/ns/auth/acl#Create',
+  Delete: 'http://www.w3.org/ns/auth/acl#Delete'
+} as const
+
 type TResponseMessage = typeof ResponseMessageTypes
 
 type TResponseMessages = keyof TResponseMessage
@@ -315,12 +323,19 @@ export type Resource = {
   accessGrantedTo: IRI[];
 };
 
-export type ShareAuthorization = {
-  resource: IRI;
-  applicationId: IRI;
-  agents: IRI[];
-  children: IRI[];
+export type ShareAuthorizationModes = {
+  accessMode: IRI[];
+  children: {
+    shapeTree: IRI,
+    accessMode: IRI[]
+  }[];
 }
+
+export type ShareAuthorization = {
+  applicationId: IRI;
+  resource: IRI;
+  agents: IRI[];
+} & ShareAuthorizationModes
 
 export interface ShareAuthorizationConfirmation {
   callbackEndpoint: IRI;
