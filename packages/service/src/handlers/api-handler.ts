@@ -5,12 +5,12 @@ import { RequestMessageTypes, ResponseMessageTypes } from "@janeirodigital/sai-a
 import type { IQueue } from "@janeirodigital/sai-server-interfaces";
 import {
   getApplications, getDescriptions, recordAuthorization,
-  getDataRegistries, getSocialAgents, addSocialAgent, getUnregisteredApplicationProfile
+  getDataRegistries, getSocialAgents, addSocialAgent, getUnregisteredApplicationProfile,
+  getResource, shareResource
 } from '../services';
 import type { SaiContext } from "../models/http-solid-context";
 import { validateContentType } from "../utils/http-validators";
 import { IReciprocalRegistrationsJobData } from "../models/jobs";
-import { getResource, shareResource } from "../services/data-instance";
 
 export class ApiHandler extends HttpHandler {
   private logger = getLoggerFor(this, 5, 5);
