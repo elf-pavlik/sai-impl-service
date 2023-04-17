@@ -23,7 +23,11 @@ export const getResource = async (saiSession: AuthorizationAgent, iri: string, l
 };
 
 export const shareResource = async (saiSession: AuthorizationAgent, shareAuthorization: ShareAuthorization): Promise<ShareAuthorizationConfirmation | undefined> => {
-    await saiSession.shareDataInstance(shareAuthorization)
+    const authorizationIris = await saiSession.shareDataInstance(shareAuthorization)
+
+    // TODO: this should be handled in a worker
+    await Promise.all(authorizationIris.map(authorizationIri => saiSession.generateAccessGrant(authorizationIri)))
+
     const clientIdDocument = await saiSession.factory.readable.clientIdDocument(shareAuthorization.applicationId);
     return {
         callbackEndpoint: clientIdDocument.callbackEndpoint!

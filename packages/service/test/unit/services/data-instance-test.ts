@@ -74,6 +74,7 @@ describe('shareResource', () => {
   test('sucessful response', async () => {
     const saiSession = jest.mocked({
       shareDataInstance: jest.fn(),
+      generateAccessGrant: jest.fn(),
       factory: {
         readable: {
           clientIdDocument: jest.fn()
@@ -86,15 +87,20 @@ describe('shareResource', () => {
       callbackEndpoint: 'some-endpoint'
     } as unknown as ReadableClientIdDocument
 
+    const authorizationIris = ['https://some.iri', 'https://another.iri']
+
     saiSession.factory.readable.clientIdDocument.mockResolvedValueOnce(clientIdDocument)
+    saiSession.shareDataInstance.mockResolvedValueOnce(authorizationIris)
     
     const shareAuthorization = {} as unknown as ShareAuthorization
     const expected = {
       callbackEndpoint: clientIdDocument.callbackEndpoint
     }
-
     const resource = await shareResource(saiSession, shareAuthorization)
     expect(saiSession.shareDataInstance).toBeCalledWith(shareAuthorization)
+    for (const authorizationIri of authorizationIris) {
+      expect(saiSession.generateAccessGrant).toBeCalledWith(authorizationIri)
+    }
     expect(resource).toStrictEqual(expected)
   })
 })
